@@ -22,15 +22,7 @@
 #
 ##############################################################################
 #
-# Flags
-# -d local working directory - without the version in the back
-# -v Tryton version to update
-# -f Run update on factory
-# -u update local working directory
-# -s run local service
-# -r Issue submit request
-#
-VERSION="0.1"
+VERSION="0.2"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
@@ -69,7 +61,7 @@ def specsearch(s_module, h_version, l_dir):
             z = re.search(r"[0-9]{,2}$", line.rstrip()).group(0)
             if h_version > z:
 #            version ersetzen und weitere Aktionen
-                print("*** Größere Version für " , s_module , " gefunden: ", h_version , " aktuell: " , z)
+                print("*** Higher Version for " , s_module , " found: ", h_version , " current: " , z)
                 ergebnis = True
                 fobj.close()
                 return ergebnis
@@ -103,7 +95,7 @@ def replace_spec(s_module, h_version, l_dir):
             fobj_out.append(line)
         else:
 # Versionsnummer bestimmen:
-            print("Version für " , s_module , " gesetzt: ", h_version )
+            print("Version for " , s_module , " set to: ", h_version )
             fobj_out.append("Version:        %{majorver}." + h_version + "\n")
             ergebnis = True
 
@@ -132,12 +124,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("version", help="Tryton Version to update (like 3.8, 4.2 etc)")
 parser.add_argument("dir", help="local OBS working directory (like /home/user/Application:ERP:Tryton:)")
 parser.add_argument("-f", help="Update FACTORY - requires correct version!",  action="store_true")
-parser.add_argument("-u", help="Update local working copy (osc up)",  action="store_true")
-parser.add_argument("-s", help="run local service (osc service localrun)",  action="store_true")
+parser.add_argument("-n", help="No dry-run - perform really the update!",  action="store_true")
 parser.add_argument("-r", help="issue submit request to (1)target with (2)comment (like osc sr -m comment (from and package automatically filled) target",  nargs=2)
+parser.add_argument("-s", help="run local service (osc service localrun)",  action="store_true")
+parser.add_argument("-u", help="Update local working copy (osc up)",  action="store_true")
 
 args = parser.parse_args()
 
+if args.n == False:
+    print(" Dry run - no update!")
+    
 version_dir = args.version
 local_dir = args.dir
         
@@ -148,8 +144,8 @@ if args.f:
 else:
     local_dir += version_dir
 
-print("URL:         " , tryton_url)
-print("Lokaler Pfad:" , local_dir)
+print("URL:       " , tryton_url)
+print("Local Path:" , local_dir)
 
 try:
     os.chdir(local_dir)
@@ -167,7 +163,7 @@ if args.u:
 
 local_filename, headers = urllib.request.urlretrieve(tryton_url)
 
-print("Lokaler Dateiname: " , local_filename)
+print("Local File Name: " , local_filename)
 
 ###################################
 # Parsen der Webseite nach *tar.gz , tgz
@@ -195,7 +191,7 @@ t = ns.natsorted(t,reverse=True)
 ###################################
 # Endung tar.gz entfernen
 ###################################
-print("Die Endung entfernen und in Tupel aufteilen")
+print("Remove file extention and split into name | version")
 
 result = []
 
@@ -226,31 +222,34 @@ for liste in result:
         if specsearch(saved_module, high_version, local_dir) == True:
             counter += 1
             print("Modul mit höherer Version: ", saved_module)
-            replace_spec(saved_module, high_version, local_dir)
+            if args.n:
+                replace_spec(saved_module, high_version, local_dir)
 
 # Setzen version control
-            text = "Version " + version_dir + "." + high_version
-            do_osc("osc vc", text)
+                text = "Version " + version_dir + "." + high_version
+                do_osc("osc vc", text)
 
 # trigger_servicerun
-            if args.s:
-                do_osc("osc service localrun")
+                if args.s:
+                    do_osc("osc service localrun")
 
 # geänderte Dateien bekannt machen
-            do_osc("osc ar")
+                do_osc("osc ar")
 
 # in OBS einchecken
-            text = "Update to " + saved_module + " " + text
-            do_osc("osc ci" , text)
+                text = "Update to " + saved_module + " " + text
+                do_osc("osc ci" , text)
 
 # submit request
-            if args.r:
-                text = args.r[1]
-                if args.f:
-                    rest = "Application:ERP:Tryton:Factory"
-                else:
-                    rest = "Application:ERP:Tryton:" + version_dir + " " + saved_module + " " + args.r[0]
-                do_osc("osc sr", text, rest)
-    
-print( counter , " Module aktualisiert")
+                if args.r:
+                    text = args.r[1]
+                    if args.f:
+                        rest = "Application:ERP:Tryton:Factory"
+                    else:
+                        rest = "Application:ERP:Tryton:" + version_dir + " " + saved_module + " " + args.r[0]
+                    do_osc("osc sr", text, rest)
 
+if args.n:    
+    print( counter , " Modules updated")
+else:
+    print( counter , " Modules would be updated")

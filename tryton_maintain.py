@@ -22,7 +22,7 @@
 #
 ##############################################################################
 #
-VERSION="0.2"
+VERSION="0.3"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
@@ -117,7 +117,7 @@ def do_osc(cmd, message = "" , rest = ""):
         cmd += " -m '" + message + "' " + rest 
     p=subprocess.Popen( cmd , shell=True )
     if p.wait() == 0:
-        print(cmd , " gelaufen")
+        print(cmd , " executed")
 
 parser = argparse.ArgumentParser()
 
@@ -163,6 +163,8 @@ if args.u:
 
 local_filename, headers = urllib.request.urlretrieve(tryton_url)
 
+#local_filename = "/tmp/tmpzs_w780t"
+
 print("Local File Name: " , local_filename)
 
 ###################################
@@ -199,10 +201,15 @@ for line in t:
     x = re.sub(r".t[ar.]*gz$", "", line)
     if x != None:
       y = x.split("-")
+      if y[1] == "sao":
+# sao does not follow the naming scheme          
+          y[0] = y[0] + "-" + y[1]
+          y[1] = y[2]
       y[1] = re.search(r"[0-9]{,2}$", y[1]).group(0)
       if y[1] != None and y[1] != "":
         result.append(y)
 
+#print(result)
 ###################################
 # Den ersten Eintrag jeweils prüfen, of das spec file 
 # der version entspricht
@@ -221,7 +228,7 @@ for liste in result:
         
         if specsearch(saved_module, high_version, local_dir) == True:
             counter += 1
-            print("Modul mit höherer Version: ", saved_module)
+            print("Module with higher Version: ", saved_module)
             if args.n:
                 replace_spec(saved_module, high_version, local_dir)
 

@@ -22,7 +22,7 @@
 #
 ##############################################################################
 #
-VERSION="0.3"
+VERSION="0.4"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
@@ -59,7 +59,8 @@ def specsearch(s_module, h_version, l_dir):
         if x != None:
 # Versionsnummer bestimmen:
             z = re.search(r"[0-9]{,2}$", line.rstrip()).group(0)
-            if h_version > z:
+            
+            if int(h_version) > int(z):
 #            version ersetzen und weitere Aktionen
                 print("*** Higher Version for " , s_module , " found: ", h_version , " current: " , z)
                 ergebnis = True
@@ -130,6 +131,8 @@ parser.add_argument("-s", help="run local service (osc service localrun)",  acti
 parser.add_argument("-u", help="Update local working copy (osc up)",  action="store_true")
 
 args = parser.parse_args()
+
+print("tryton_maintain Version ", VERSION)
 
 if args.n == False:
     print(" Dry run - no update!")
@@ -236,8 +239,11 @@ for liste in result:
                 text = "Version " + version_dir + "." + high_version
                 do_osc("osc vc", text)
 
-# trigger_servicerun
+# trigger_servicerun, delete current source file
                 if args.s:
+# first delete old source file                    
+                    cmd = "rm " + saved_module + "-" + version_dir + "*" 
+                    p=subprocess.Popen( cmd , shell=True )
                     do_osc("osc service localrun")
 
 # geänderte Dateien bekannt machen

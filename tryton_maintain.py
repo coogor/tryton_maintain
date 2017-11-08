@@ -22,12 +22,12 @@
 #
 ##############################################################################
 #
-VERSION="0.4"
+VERSION="0.4.1"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
 local_dir = "/home/docb/buildservice/Application:ERP:Tryton:" 
-version_dir = "3.8"
+version_dir = "4.2"
 result = []
 
 import argparse
@@ -236,7 +236,7 @@ for liste in result:
                 replace_spec(saved_module, high_version, local_dir)
 
 # Setzen version control
-                text = "Version " + version_dir + "." + high_version
+                text = "Version " + version_dir + "." + high_version + " - Bugfix Release"
                 do_osc("osc vc", text)
 
 # trigger_servicerun, delete current source file
@@ -261,7 +261,8 @@ for liste in result:
                     else:
                         rest = "Application:ERP:Tryton:" + version_dir + " " + saved_module + " " + args.r[0]
                     do_osc("osc sr", text, rest)
-
+            print("---")
+            
 if args.n:    
     print( counter , " Modules updated")
 else:

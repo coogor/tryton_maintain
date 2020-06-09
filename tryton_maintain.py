@@ -22,12 +22,12 @@
 #
 ##############################################################################
 #
-VERSION="0.4.1"
+VERSION="0.4.3"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
 local_dir = "/home/docb/buildservice/Application:ERP:Tryton:" 
-version_dir = "4.2"
+version_dir = "5.0"
 result = []
 
 import argparse
@@ -212,7 +212,7 @@ for line in t:
       if y[1] != None and y[1] != "":
         result.append(y)
 
-#print(result)
+##print(result)
 ###################################
 # Den ersten Eintrag jeweils prüfen, of das spec file 
 # der version entspricht
@@ -242,7 +242,7 @@ for liste in result:
 # trigger_servicerun, delete current source file
                 if args.s:
 # first delete old source file                    
-                    cmd = "rm " + saved_module + "-" + version_dir + "*" 
+                    cmd = "rm " + saved_module + "-" + version_dir + "*.t*" 
                     p=subprocess.Popen( cmd , shell=True )
                     do_osc("osc service localrun")
 

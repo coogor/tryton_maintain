@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 
-# Maintenance program for Tryton on OBS 
+# Maintenance program for Tryton/GNUHealth on OBS 
 
 ##############################################################################
 #
 #    tryton_maintain
-#    Copyright (C) 2016 Axel Braun <axel.braun@gmx.de>
+#    Copyright (C) 2016-2021 Axel Braun <axel.braun@gmx.de>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 #
 ##############################################################################
 #
-VERSION="0.4.3"
+VERSION="0.5.0"
 
 # Einige Defaults - werden von argparse übersteuert
 tryton_url = "http://downloads.tryton.org"
 local_dir = "/home/docb/buildservice/Application:ERP:Tryton:" 
-version_dir = "5.0"
+version_dir = "6.0"
 result = []
 
 import argparse
@@ -123,8 +123,7 @@ def do_osc(cmd, message = "" , rest = ""):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("version", help="Tryton Version to update (like 3.8, 4.2 etc)")
-parser.add_argument("dir", help="local OBS working directory (like /home/user/Application:ERP:Tryton:)")
-parser.add_argument("-f", help="Update FACTORY - requires correct version!",  action="store_true")
+parser.add_argument("dir", help="local OBS working directory (like /home/user/Application:ERP:Tryton:6.0)")
 parser.add_argument("-n", help="No dry-run - perform really the update!",  action="store_true")
 parser.add_argument("-r", help="issue submit request to (1)target with (2)comment (like osc sr -m comment (from and package automatically filled) target",  nargs=2)
 parser.add_argument("-s", help="run local service (osc service localrun)",  action="store_true")
@@ -142,10 +141,10 @@ local_dir = args.dir
         
 tryton_url += "/" + version_dir
 # lokales arbeitsdirectory
-if args.f:
-    local_dir += "Factory"
-else:
-    local_dir += version_dir
+#if args.f:
+#    local_dir += "Factory"
+#else:
+#    local_dir += version_dir
 
 print("URL:       " , tryton_url)
 print("Local Path:" , local_dir)
